@@ -3,7 +3,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from app.database import DATABASE_URL, Base
+from app.core.config import DATABASE_URL
+from app.core.database import Base
 import app.models.event  # noqa: F401
 
 config = context.config
@@ -49,4 +50,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

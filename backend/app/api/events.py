@@ -4,8 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.limiter import RATE_LIMIT_DEFAULT, limiter
+from app.core.config import RATE_LIMIT_DEFAULT
+from app.core.database import get_db
+from app.core.limiter import limiter
 from app.schemas.event import (
     AnalyticsResponse,
     EventCreate,
