@@ -1,44 +1,48 @@
 import type {
   AnalyticsResponse,
-  EventFilterParams,
+  EventFiltersState,
+  EventItem,
   PaginatedEventsResponse,
 } from "../types/event";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 export async function fetchEvents(
-  params: EventFilterParams,
-  signal?: AbortSignal
+  page: number,
+  limit: number,
+  filters: EventFiltersState
 ): Promise<PaginatedEventsResponse> {
-  const searchParams = new URLSearchParams();
-
-  if (params.page) searchParams.set("page", String(params.page));
-  if (params.limit) searchParams.set("limit", String(params.limit));
-  if (params.event_type) searchParams.set("event_type", params.event_type);
-  if (params.start_date) searchParams.set("start_date", params.start_date);
-  if (params.end_date) searchParams.set("end_date", params.end_date);
-  if (params.search) searchParams.set("search", params.search);
-
-  const response = await fetch(`${API_BASE_URL}/api/events?${searchParams.toString()}`, {
-    signal,
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
   });
 
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.detail || `Failed to fetch events (${response.status})`);
-  }
+  if (filters.event_type) params.set("event_type", filters.event_type);
+  if (filters.search) params.set("search", filters.search);
+  if (filters.start_date) params.set("start_date", `${filters.start_date}:00Z`);
+  if (filters.end_date) params.set("end_date", `${filters.end_date}:59Z`);
 
-  return response.json();
+  const res = await fetch(`${API_URL}/api/events?${params}`);
+  if (!res.ok) throw new Error(`Failed to load events (${res.status})`);
+  return res.json();
 }
 
-export async function fetchAnalytics(signal?: AbortSignal): Promise<AnalyticsResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/events/analytics`, { signal });
-
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.detail || `Failed to fetch analytics (${response.status})`);
-  }
-
-  return response.json();
+export async function fetchAnalytics(): Promise<AnalyticsResponse> {
+  const res = await fetch(`${API_URL}/api/events/analytics`);
+  if (!res.ok) throw new Error(`Failed to load analytics (${res.status})`);
+  return res.json();
 }
 
+export async function createEvent(event: EventItem): Promise<EventItem> {
+  const res = await fetch(`${API_URL}/api/events`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(event),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to create event (${res.status})`);
+  }
+  return res.json();
+}

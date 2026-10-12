@@ -25,12 +25,9 @@ export interface AnalyticsResponse {
   data: EventTypeCount[];
 }
 
-export interface EventFilterParams {
-  page?: number;
-  limit?: number;
-  event_type?: string;
-  start_date?: string;
-  end_date?: string;
-  search?: string;
+export interface EventFiltersState {
+  event_type: string;
+  search: string;
+  start_date: string;
+  end_date: string;
 }
-
