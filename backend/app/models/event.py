@@ -23,4 +23,3 @@ class Event(Base):
         nullable=False,
         index=True,
     )
-
